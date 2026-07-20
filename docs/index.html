@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Build and validate a machine-readable grant-scoring configuration-drift release record in your browser.">
+  <title>Grant-Scoring Release Gate Record Builder</title>
+  <link rel="canonical" href="https://mheilimo.github.io/grant-scoring-release-gate-record/">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2316242f'/%3E%3Cpath d='M18 33l9 9 20-22' fill='none' stroke='%2366e0ba' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#main">Grant-Scoring Release Gate</a>
+    <a class="repository-link" href="https://github.com/mheilimo/grant-scoring-release-gate-record">Schema repository</a>
+  </header>
+
+  <main id="main">
+    <section class="hero">
+      <p class="eyebrow">BROWSER-ONLY RECORD BUILDER</p>
+      <h1>Make configuration drift reviewable</h1>
+      <p class="lede">Capture what changed, how two reviewers calibrated it and who owns the release decision. Validate the complete record before exporting JSON.</p>
+      <div class="privacy-note"><strong>Local only.</strong> No account, upload, application telemetry, browser storage or runtime network request. Reloading clears the work.</div>
+    </section>
+
+    <section class="workspace" aria-label="Release-gate record builder">
+      <form id="record-form" novalidate>
+        <section class="panel">
+          <div class="section-heading"><span>1</span><div><h2>Record and change</h2><p>Name the release and its human-owned scope.</p></div></div>
+          <div class="grid two">
+            <label>Record ID<input id="record-id" value="fictional-call-2026-release-a"></label>
+            <label>Created at (UTC)<input id="created-at" type="datetime-local"></label>
+            <label class="wide">Change reason<textarea id="change-reason" rows="2">Fictional clarification of evidence recency and scope definitions.</textarea></label>
+            <label class="wide">Changed fields (JSON array)<textarea id="changed-fields" rows="5"></textarea></label>
+            <label>Affected criteria<input id="affected-criteria" value="market, traction"></label>
+            <label>Affected applicant groups<input id="affected-groups" value="fictional-early-stage-companies"></label>
+            <label>Human change owner<input id="change-owner" value="programme-review-lead"></label>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="section-heading"><span>2</span><div><h2>Evaluation fingerprints</h2><p>Preserve both variants; do not infer comparability from similar averages.</p></div></div>
+          <div class="fingerprint-grid">
+            <h3>Baseline</h3><h3>Candidate</h3>
+            <label>Rubric version<input id="baseline-rubric"></label><label>Rubric version<input id="candidate-rubric"></label>
+            <label>Policy context<input id="baseline-policy"></label><label>Policy context<input id="candidate-policy"></label>
+            <label>Resolved config SHA-256<input id="baseline-config"></label><label>Resolved config SHA-256<input id="candidate-config"></label>
+            <label>Prompt bundle SHA-256<input id="baseline-prompt"></label><label>Prompt bundle SHA-256<input id="candidate-prompt"></label>
+            <label>Tool schema SHA-256<input id="baseline-tool"></label><label>Tool schema SHA-256<input id="candidate-tool"></label>
+            <label>Few-shot set SHA-256<input id="baseline-few-shot"></label><label>Few-shot set SHA-256<input id="candidate-few-shot"></label>
+            <label>Model identity<input id="baseline-model"></label><label>Model identity<input id="candidate-model"></label>
+            <label>Evidence cutoff (UTC)<input id="baseline-cutoff" type="datetime-local"></label><label>Evidence cutoff (UTC)<input id="candidate-cutoff" type="datetime-local"></label>
+            <label>Pipeline commit<input id="baseline-commit"></label><label>Pipeline commit<input id="candidate-commit"></label>
+            <label>Executed at (UTC)<input id="baseline-executed" type="datetime-local"></label><label>Executed at (UTC)<input id="candidate-executed" type="datetime-local"></label>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="section-heading"><span>3</span><div><h2>Blinded reviewer calibration</h2><p>Agreement is not correctness. Preserve distributions beside the statistics.</p></div></div>
+          <div class="grid three">
+            <label>Case basis<select id="case-basis"><option value="fictional">Fictional</option><option value="consented_deidentified">Consented and de-identified</option><option value="mixed">Mixed</option></select></label>
+            <label>Case count<input id="case-count" type="number" min="20" max="30" value="24"></label>
+            <label>Reviewer count<input id="reviewer-count" type="number" value="2" readonly></label>
+            <label>Raw agreement<input id="raw-agreement" type="number" min="0" max="1" step="0.01" value="0.5"></label>
+            <label>Unweighted Cohen's kappa<input id="kappa" type="number" min="-1" max="1" step="0.01" value="0.4"></label>
+            <label>Material disagreements<input id="material-disagreements" type="number" min="0" value="12"></label>
+            <label>Unresolved material disagreements<input id="unresolved-disagreements" type="number" min="0" value="0"></label>
+            <label class="wide">Label distribution (JSON object)<textarea id="label-distribution" rows="7"></textarea></label>
+            <label class="wide">Disagreement agenda (JSON array)<textarea id="disagreement-agenda" rows="10"></textarea></label>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="section-heading"><span>4</span><div><h2>Accountable decision</h2><p>Keep comparability separate from whether a bounded pilot may proceed.</p></div></div>
+          <div class="grid three">
+            <label>Historical outcome use<select id="historical-use"><option value="not_used">Not used</option><option value="retrospective_separation">Retrospective separation</option><option value="error_analysis">Error analysis</option></select></label>
+            <label>Comparability<select id="comparability"><option value="separate_variant">Separate variant</option><option value="comparable">Comparable</option><option value="recomputed">Recomputed</option><option value="non_comparable">Non-comparable</option><option value="retired">Retired</option></select></label>
+            <label>Release status<select id="release-status"><option value="bounded_pilot">Bounded pilot</option><option value="rejected">Rejected</option><option value="released">Released</option></select></label>
+            <label>Human release owner<input id="human-owner" value="programme-review-lead"></label>
+            <label>Programme-policy owner<input id="policy-owner" value="programme-policy-owner"></label>
+            <label>Eligibility owner<input id="eligibility-owner" value="eligibility-review-owner"></label>
+            <label>Final-funding decision owner<input id="funding-owner" value="funding-panel-chair"></label>
+            <label>Decided at (UTC)<input id="decided-at" type="datetime-local"></label>
+            <label class="wide">Decision note<textarea id="decision-note" rows="2">Fictional bounded pilot; do not mix candidate and baseline results.</textarea></label>
+          </div>
+        </section>
+
+        <div class="actions" aria-label="Record actions">
+          <button type="button" id="load-example">Load fictional example</button>
+          <button type="button" id="validate-record" class="primary">Validate record</button>
+          <button type="button" id="copy-json">Copy JSON</button>
+          <button type="button" id="download-json">Download JSON</button>
+          <button type="reset" id="reset-record">Reset</button>
+        </div>
+      </form>
+
+      <aside class="output-panel" aria-live="polite">
+        <div class="output-heading"><div><p class="eyebrow">CURRENT RECORD</p><h2>Validation and JSON</h2></div><span id="validation-state" class="state neutral">Not checked</span></div>
+        <ul id="validation-errors" class="errors"></ul>
+        <pre id="json-output" tabindex="0"></pre>
+      </aside>
+    </section>
+
+    <section class="boundaries">
+      <h2>What this tool does not decide</h2>
+      <p>This is a configuration and calibration record builder, not an application quality score. It does not define programme criteria, verify application evidence, validate a rubric, certify fairness, calculate a universal grant score, determine reviewer correctness, decide eligibility, rank applications, award funding or replace policy, procurement, legal, panel or full review.</p>
+      <p>Disclosure: I work on DDScore at Playful Pixels Oy.</p>
+      <p>DDScore is separate analytical tooling. It turns submitted private-company materials into a structured 0–100 analysis across 12 dimensions, checks relevant claims against current public sources and keeps confidence and named gaps visible. It supports the evaluator; programme fit and the final funding decision stay with people.</p>
+      <p><a class="cta" href="https://www.ddscore.ai/for-evaluator/?utm_source=github-pages&amp;utm_medium=referral&amp;utm_campaign=ddscore-30d-jul-2026&amp;utm_content=grant_scoring_release_gate_record_builder_a">See DDScore for evaluators</a></p>
+    </section>
+  </main>
+
+  <footer>Open schema package · CC BY 4.0 · Built for inspectable human decisions</footer>
+  <script src="app.js"></script>
+</body>
+</html>
