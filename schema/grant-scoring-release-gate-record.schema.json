@@ -1,0 +1,164 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mheilimo/grant-scoring-release-gate-record/schema/grant-scoring-release-gate-record.schema.json",
+  "title": "Grant-Scoring Release Gate Record",
+  "description": "A machine-readable audit record for configuration change, reviewer calibration and accountable human release decisions.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "record_id",
+    "created_at",
+    "baseline_fingerprint",
+    "candidate_fingerprint",
+    "change",
+    "calibration",
+    "disagreement_agenda",
+    "historical_outcome_use",
+    "decision"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "record_id": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "string", "format": "date-time" },
+    "baseline_fingerprint": { "$ref": "#/$defs/fingerprint" },
+    "candidate_fingerprint": { "$ref": "#/$defs/fingerprint" },
+    "change": { "$ref": "#/$defs/change" },
+    "calibration": { "$ref": "#/$defs/calibration" },
+    "disagreement_agenda": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/disagreement" }
+    },
+    "historical_outcome_use": {
+      "enum": ["not_used", "retrospective_separation", "error_analysis"]
+    },
+    "decision": { "$ref": "#/$defs/decision" }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "nonEmptyStrings": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "fingerprint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rubric_version",
+        "policy_context",
+        "resolved_config_sha256",
+        "prompt_bundle_sha256",
+        "tool_schema_sha256",
+        "few_shot_set_sha256",
+        "model_identity",
+        "evidence_cutoff",
+        "pipeline_commit",
+        "executed_at"
+      ],
+      "properties": {
+        "rubric_version": { "type": "string", "minLength": 1 },
+        "policy_context": { "type": "string", "minLength": 1 },
+        "resolved_config_sha256": { "$ref": "#/$defs/sha256" },
+        "prompt_bundle_sha256": { "$ref": "#/$defs/sha256" },
+        "tool_schema_sha256": { "$ref": "#/$defs/sha256" },
+        "few_shot_set_sha256": { "$ref": "#/$defs/sha256" },
+        "model_identity": { "type": "string", "minLength": 1 },
+        "evidence_cutoff": { "type": "string", "format": "date-time" },
+        "pipeline_commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "executed_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "change": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reason", "changed_fields", "affected_criteria", "affected_applicant_groups", "human_change_owner"],
+      "properties": {
+        "reason": { "type": "string", "minLength": 1 },
+        "changed_fields": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["field", "old_value", "new_value"],
+            "properties": {
+              "field": { "type": "string", "minLength": 1 },
+              "old_value": {},
+              "new_value": {}
+            }
+          }
+        },
+        "affected_criteria": { "$ref": "#/$defs/nonEmptyStrings" },
+        "affected_applicant_groups": { "$ref": "#/$defs/nonEmptyStrings" },
+        "human_change_owner": { "type": "string", "minLength": 1 }
+      }
+    },
+    "calibration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["case_basis", "case_count", "reviewer_count", "blind_independent_labels", "label_distribution", "raw_agreement", "cohens_kappa_unweighted", "material_disagreements", "unresolved_material_disagreements"],
+      "properties": {
+        "case_basis": { "enum": ["fictional", "consented_deidentified", "mixed"] },
+        "case_count": { "type": "integer", "minimum": 20, "maximum": 30 },
+        "reviewer_count": { "const": 2 },
+        "blind_independent_labels": { "const": true },
+        "label_distribution": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "raw_agreement": { "type": "number", "minimum": 0, "maximum": 1 },
+        "cohens_kappa_unweighted": {
+          "type": ["number", "null"],
+          "minimum": -1,
+          "maximum": 1
+        },
+        "material_disagreements": { "type": "integer", "minimum": 0 },
+        "unresolved_material_disagreements": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "disagreement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["case_id", "criterion_id", "evidence_locator", "reviewer_a_state", "reviewer_b_state", "candidate_state", "disagreement_type", "policy_question", "accountable_owner", "human_outcome"],
+      "properties": {
+        "case_id": { "type": "string", "minLength": 1 },
+        "criterion_id": { "type": "string", "minLength": 1 },
+        "evidence_locator": { "type": "string", "minLength": 1 },
+        "reviewer_a_state": { "type": "string", "minLength": 1 },
+        "reviewer_b_state": { "type": "string", "minLength": 1 },
+        "candidate_state": { "type": "string", "minLength": 1 },
+        "disagreement_type": { "enum": ["definition", "missing_evidence", "conflicting_evidence", "time_boundary", "scope", "extraction", "policy"] },
+        "policy_question": { "type": "string" },
+        "accountable_owner": { "type": "string", "minLength": 1 },
+        "human_outcome": { "type": "string", "minLength": 1 },
+        "decided_at": { "type": ["string", "null"], "format": "date-time" },
+        "applies_from": { "type": ["string", "null"], "format": "date-time" }
+      }
+    },
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["comparability", "release_status", "human_owner", "programme_policy_owner", "eligibility_owner", "final_funding_decision_owner", "decided_at", "decision_note"],
+      "properties": {
+        "comparability": { "enum": ["comparable", "recomputed", "separate_variant", "non_comparable", "retired"] },
+        "release_status": { "enum": ["rejected", "bounded_pilot", "released"] },
+        "human_owner": { "type": "string", "minLength": 1 },
+        "programme_policy_owner": { "type": "string", "minLength": 1 },
+        "eligibility_owner": { "type": "string", "minLength": 1 },
+        "final_funding_decision_owner": { "type": "string", "minLength": 1 },
+        "decided_at": { "type": "string", "format": "date-time" },
+        "decision_note": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}
+
